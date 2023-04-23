@@ -58,7 +58,9 @@ node *huffman(std::vector<char> &chars, std::vector<int> &freqs) {
 
 //-----------------------------------------------------------------------------------------------
 
-void printCodes(node *root, std::string code) {
+/*
+
+void printCodes(node *root, std::string code) { 
 
   if (root == NULL)
     return;
@@ -71,3 +73,5 @@ void printCodes(node *root, std::string code) {
   printCodes(root->left, code + "0");
   printCodes(root->right, code + "1");
 }
+
+*/
