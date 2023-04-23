@@ -37,9 +37,13 @@ A list of m integers (where m is the frequency of the symbol) representing the p
 Generate the Huffman Tree based on the input.
 
 Create n POSIX threads (where n is the number of symbols in the alphabet). Each child thread executes the following tasks:
+
 Receives the Huffman tree and the information about the symbol to decompress (binary code and list of positions) from the main thread.
+
 Uses the Huffman tree to determine the character from the original message based on the binary code.
+
 Stores the decompressed character (as many times as needed based on the list of positions) on a memory location accessible by the main thread.
+
 Print the information about the assigned symbol using the output message from the example below. 
 
 Print the original message.
@@ -59,11 +63,17 @@ Original message: CACACADBD
 NOTES:
 
 You can safely assume that the input files will always be in the proper format.
+
 You cannot use global variables. A 100% penalty will be applied to submissions using global variables. 
+
 You must define the critical sections following the guidelines that we discussed in class.
+
 You must use POSIX threads. A penalty of 100% will be applied to submissions using a thread library other than the pthread library.
+
 You can only use named POSIX semaphores, pthreads mutex semaphores, or pthreads condition variables to achieve synchronization. Using pthread_join or sleep to synchronize your threads is not allowed (you must use pthread_join to guarantee that the parent thread waits for all its child threads to end before ending its execution). A penalty of 100% will be applied to submissions using the previous system calls to synchronize the child threads.
+
 You cannot use different memory addresses to pass the information from the parent thread to the child threads.
+
 You must use the output statement format based on the example above.
 
 (I should point out that in this version, each thread is using different memory addresses of the struct when I'm not supposed to)
