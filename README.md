@@ -47,9 +47,13 @@ Print the original message.
 Given the previous input, the expected output is:
 
 Symbol: A, Frequency: 3, Code: 11
+
 Symbol: C, Frequency: 3, Code: 0
+
 Symbol: D, Frequency: 2, Code: 101
+
 Symbol: B, Frequency: 1, Code: 100
+
 Original message: CACACADBD
 
 NOTES:
