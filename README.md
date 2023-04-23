@@ -5,15 +5,25 @@
 Given the information about the alphabet and the compressed file as input from STDIN, you need to implement a multithreaded Huffman decompressor based on the following steps:
 
 Read the input from STDIN (the Moodle server will implement input redirection to send the information from a file to STDIN). The input has the following format:
+
 4
+
 A 3
+
 C 3
+
 B 1
+
 D 2
+
 11 1 3 5
+
 0 0 2 4
+
 101 6 8
+
 100 7
+
 The first line has a single integer value representing the number of symbols in the alphabet (n).
 
 The next n lines present the information about the alphabet. Each line presents the information about a symbol from the alphabet:
