@@ -13,7 +13,7 @@ struct threadinfo {
   node *treenode;
   std::string trav;
   int threadnumber;
-  int nthreads; 
+  int nthreads;
   int *turn;
   pthread_mutex_t *semB;
   pthread_cond_t *waitTurn;
@@ -36,40 +36,52 @@ node *traverse(node *tree, std::string tra, int index) {
   return 0;
 }
 
+//----------------------------------------------------------------
+
 void *decode(void *void_ptr) {
-    
+
   threadinfo *arg = (threadinfo *)void_ptr;
 
-  pthread_mutex_lock(arg->semB);
-  
-  while(arg->threadnumber != *(arg->turn)){
-        pthread_cond_wait(arg->waitTurn, arg->semB);
-  }
-  
-  node *info = traverse(arg->treenode, arg->trav, 0); // info node
+  std::string binary = arg->trav;
 
-  //pthread_mutex_unlock(arg->semB);
+  int aturn = *(arg->turn);
+
+  pthread_mutex_unlock(arg->semB);
+
+  node *info = traverse(arg->treenode, binary, 0); // info node
+
+  pthread_mutex_lock(arg->semB);  // second crit section
+
+  while (arg->threadnumber != aturn) {
+    pthread_cond_wait(arg->waitTurn, arg->semB);
+  }
+
+  pthread_mutex_unlock(arg->semB);
+
+  //-------------------------------------------------------------------------
 
   for (int i = 0; i < arg->positions.size(); i++) {
 
     int pos = arg->positions.at(i); // the position
-  
-    (*arg->message)[pos] = info->c;  //insert the char into the position of string
-    
+
+    (*arg->message)[pos] = info->c; // insert char into position of string
   }
 
   std::cout << "Symbol: " << info->c << ", Frequency: " << info->freq
             << ", Code: " << arg->trav << std::endl;
 
-  //pthread_mutex_lock(arg->semB);
-            
-  if(*(arg->turn) >= arg->nthreads){
-      *(arg->turn) = 1;
-  }else{
-      *(arg->turn) = *(arg->turn) + 1;
+  //---------------------------------------------------------------------
+
+  pthread_mutex_lock(arg->semB); //third crit section
+  
+  if (aturn >= arg->nthreads) {
+    aturn = 1;
+  } else {
+    aturn = aturn + 1;
   }
-            
+
   pthread_cond_broadcast(arg->waitTurn);
+  
   pthread_mutex_unlock(arg->semB);
 
   pthread_exit(NULL);
@@ -106,23 +118,30 @@ int main() {
     totfreq += freqs.at(i);
   }
 
-  std::string message(totfreq, '_'); //the final result
+  std::string message(totfreq, '_'); // the final result
 
   int j = 0;
-  
+
   pthread_mutex_t mutex;
   pthread_mutex_init(&mutex, NULL);
-  
-  pthread_cond_t waitTurn = PTHREAD_COND_INITIALIZER;  // Condition variable to control the turn
 
-  int turn = 0; // initialize the turn here
+  pthread_cond_t waitTurn =
+      PTHREAD_COND_INITIALIZER; // Condition variable to control the turn
+
+  int turn = 0; // initialize the turn here (shared resource)
+
+  threadinfo *cont = new threadinfo;
+  cont->message = &message;
+  cont->treenode = root;
+  cont->turn = &turn;
+  cont->semB = &mutex;
+  cont->waitTurn = &waitTurn;
+  cont->nthreads = symcount; // size checker for the turn
 
   std::string cline;
-  while (getline(std::cin, cline)) { //extract the traversal and positions
+  while (getline(std::cin, cline)) { // extract the traversal and positions
 
-    threadinfo *cont = new threadinfo(); 
-    cont->message = &message;
-    cont->treenode = root;
+    pthread_mutex_lock(cont->semB);
 
     std::string s1 = cline.substr(0, cline.find(' ')); // traversal string
     cont->trav = s1;
@@ -131,24 +150,17 @@ int main() {
     std::stringstream ss(cline.substr(e, cline.length())); // positions
     int n;
 
-    while (ss >> n) { //get all positions
+    while (ss >> n) { // get all positions
       cont->positions.push_back(n);
     }
-    
-    cont->threadnumber = j;
-    
-    cont->turn = &turn;
 
-    cont->semB = &mutex;
-    
-    cont->waitTurn = &waitTurn; 
-    
-    cont->nthreads = symcount; //size checker for the turn
+    cont->threadnumber = j;
 
     if (pthread_create(&threadid[j], NULL, decode, (void *)cont)) {
       fprintf(stderr, "Error creating thread\n");
       return 1;
     }
+    
 
     j++;
   }
@@ -159,13 +171,16 @@ int main() {
 
   //------------Message-------------------
 
-  std::cout << "Original message: ";
+  std::cout << "Original message: " << message;
 
-  for (int i = 0; i < totfreq; i++) {
+  /*for (int i = 0; i < totfreq; i++) {
     std::cout << message[i];
-  }
+  }*/
+  
+ 
 
   delete[] threadid;
+  delete cont;
   
   return 0;
 }
