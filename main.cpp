@@ -43,42 +43,36 @@ void *decode(void *void_ptr) {
   threadinfo *arg = (threadinfo *)void_ptr;
 
   std::string binary = arg->trav;
-
-  int aturn = *(arg->turn);
-
+  int threadnum = arg->threadnumber;
+  std::string amessage = *(arg->message);
+  
   pthread_mutex_unlock(arg->semB);
 
   node *info = traverse(arg->treenode, binary, 0); // info node
 
   pthread_mutex_lock(arg->semB);  // second crit section
 
-  while (arg->threadnumber != aturn) {
+  while (threadnum != *(arg->turn)) {
     pthread_cond_wait(arg->waitTurn, arg->semB);
   }
-
   pthread_mutex_unlock(arg->semB);
 
   //-------------------------------------------------------------------------
-
   for (int i = 0; i < arg->positions.size(); i++) {
 
     int pos = arg->positions.at(i); // the position
 
-    (*arg->message)[pos] = info->c; // insert char into position of string
+    amessage[pos] = info->c; // insert char into position of string
   }
 
   std::cout << "Symbol: " << info->c << ", Frequency: " << info->freq
-            << ", Code: " << arg->trav << std::endl;
+            << ", Code: " << binary << std::endl;
 
   //---------------------------------------------------------------------
 
   pthread_mutex_lock(arg->semB); //third crit section
   
-  if (aturn >= arg->nthreads) {
-    aturn = 1;
-  } else {
-    aturn = aturn + 1;
-  }
+  (*(arg->turn)) = (*(arg->turn)) + 1;
 
   pthread_cond_broadcast(arg->waitTurn);
   
@@ -118,7 +112,8 @@ int main() {
     totfreq += freqs.at(i);
   }
 
-  std::string message(totfreq, '_'); // the final result
+  //std::string message(totfreq, '_'); // the final result
+  
 
   int j = 0;
 
@@ -131,6 +126,7 @@ int main() {
   int turn = 0; // initialize the turn here (shared resource)
 
   threadinfo *cont = new threadinfo;
+  
   cont->message = &message;
   cont->treenode = root;
   cont->turn = &turn;
@@ -139,10 +135,10 @@ int main() {
   cont->nthreads = symcount; // size checker for the turn
 
   std::string cline;
-  while (getline(std::cin, cline)) { // extract the traversal and positions
+   while (getline(std::cin, cline)) { // extract the traversal and positions
 
     pthread_mutex_lock(cont->semB);
-
+    std::vector<int> positions;
     std::string s1 = cline.substr(0, cline.find(' ')); // traversal string
     cont->trav = s1;
 
@@ -151,15 +147,15 @@ int main() {
     int n;
 
     while (ss >> n) { // get all positions
-      cont->positions.push_back(n);
+      positions.push_back(n);
     }
-
+    cont->positions = positions;
     cont->threadnumber = j;
-
     if (pthread_create(&threadid[j], NULL, decode, (void *)cont)) {
       fprintf(stderr, "Error creating thread\n");
       return 1;
     }
+    //pthread_mutex_unlock(cont->semB);
     
 
     j++;
@@ -171,13 +167,11 @@ int main() {
 
   //------------Message-------------------
 
-  std::cout << "Original message: " << message;
+  std::cout << "Original message: ";
 
-  /*for (int i = 0; i < totfreq; i++) {
+  for (int i = 0; i < totfreq; i++) {
     std::cout << message[i];
-  }*/
-  
- 
+  }
 
   delete[] threadid;
   delete cont;
