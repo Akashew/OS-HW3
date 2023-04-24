@@ -112,7 +112,7 @@ int main() {
     totfreq += freqs.at(i);
   }
 
-  //std::string message(totfreq, '_'); // the final result
+  std::string message(totfreq, '_'); // the final result
   
 
   int j = 0;
@@ -155,7 +155,7 @@ int main() {
       fprintf(stderr, "Error creating thread\n");
       return 1;
     }
-    //pthread_mutex_unlock(cont->semB);
+    
     
 
     j++;
