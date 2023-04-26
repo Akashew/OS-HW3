@@ -76,5 +76,3 @@ You cannot use different memory addresses to pass the information from the paren
 
 You must use the output statement format based on the example above.
 
-(I should point out that in this version, each thread is using different memory addresses of the struct when I'm not supposed to)
-
