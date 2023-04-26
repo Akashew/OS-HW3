@@ -49,9 +49,9 @@ void *decode(void *void_ptr) { //thread function
   
   pthread_mutex_unlock(arg->semB);
 
-  node *info = traverse(arg->treenode, binary, 0); // info node
+  node *info = traverse(arg->treenode, binary, 0); // node used to print and insert
 
-  pthread_mutex_lock(arg->semB);  // second crit section
+  pthread_mutex_lock(arg->semB);  // second critical section
 
   while (threadnum != *(arg->turn)) {
     pthread_cond_wait(arg->waitTurn, arg->semB);
@@ -72,9 +72,9 @@ void *decode(void *void_ptr) { //thread function
 
   //---------------------------------------------------------------------
 
-  pthread_mutex_lock(arg->semB); //third crit section
+  pthread_mutex_lock(arg->semB); //third critical section
   
-  if((*(arg->turn)) >= arg->nthreads){
+  if((*(arg->turn)) >= arg->nthreads){ //update shared resource
       (*(arg->turn)) = 1;
   }else{
       (*(arg->turn)) = (*(arg->turn)) + 1;
@@ -142,7 +142,7 @@ int main() {
   std::string cline;
    while (getline(std::cin, cline)) { // extract the traversal and positions
 
-    pthread_mutex_lock(cont->semB);
+    pthread_mutex_lock(cont->semB); //first critical section
     
     std::vector<int> positions;
     std::string s1 = cline.substr(0, cline.find(' ')); // traversal string (binary)
