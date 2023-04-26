@@ -9,8 +9,7 @@
 
 struct threadinfo {
   std::vector<int> positions;
-  //std::string *message;
-  char *message;
+  std::string *message;
   node *treenode;
   std::string trav;
   int threadnumber;
@@ -62,7 +61,7 @@ void *decode(void *void_ptr) {
 
     int pos = arg->positions.at(i); // the position
 
-    arg->message[pos] = info->c; // insert char into position of string
+    (*arg->message)[pos] = info->c; // insert char into position of string
   }
 
   std::cout << "Symbol: " << info->c << ", Frequency: " << info->freq
@@ -112,14 +111,7 @@ int main() {
     totfreq += freqs.at(i);
   }
 
-  //std::string message(totfreq, '_'); // the final result
-
-  char* message = new char[totfreq]; // Dynamically allocate memory
-
-    // Initialize the array with the symbol
-  for (int i = 0; i < totfreq; i++) {
-    message[i] = '_';
-  }
+  std::string message(totfreq, '_'); // the final result
 
   int j = 0;
 
@@ -133,7 +125,7 @@ int main() {
 
   threadinfo *cont = new threadinfo;
   
-  cont->message = message;
+  cont->message = &message;
   cont->treenode = root;
   cont->turn = &turn;
   cont->semB = &mutex;
