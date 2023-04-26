@@ -8,18 +8,18 @@
 #include <vector>
 
 struct threadinfo {
-  std::vector<int> positions;
-  std::string *message;
-  node *treenode;
-  std::string trav;
-  int threadnumber;
-  int nthreads;
-  int *turn;
-  pthread_mutex_t *semB;
-  pthread_cond_t *waitTurn;
+  std::vector<int> positions; //list of positions for chars to be inserted in
+  std::string *message; //used to insert the chars in
+  node *treenode; //root of Huffman tree
+  std::string trav; //binary code
+  int threadnumber; //index
+  int nthreads; //number of threads
+  int *turn; //shared resource
+  pthread_mutex_t *semB; //mutex
+  pthread_cond_t *waitTurn; //conditional variable
 };
 
-node *traverse(node *tree, std::string tra, int index) {
+node *traverse(node *tree, std::string tra, int index) { //traverse through tree to retrieve node for print
 
   if (tree == nullptr) {
     return nullptr;
@@ -38,12 +38,14 @@ node *traverse(node *tree, std::string tra, int index) {
 
 //----------------------------------------------------------------
 
-void *decode(void *void_ptr) {
+void *decode(void *void_ptr) { //thread function
 
   threadinfo *arg = (threadinfo *)void_ptr;
 
   std::string binary = arg->trav;
   int threadnum = arg->threadnumber;
+  std::vector<int> posit = arg->positions;
+ 
   
   pthread_mutex_unlock(arg->semB);
 
@@ -54,12 +56,13 @@ void *decode(void *void_ptr) {
   while (threadnum != *(arg->turn)) {
     pthread_cond_wait(arg->waitTurn, arg->semB);
   }
+  
   pthread_mutex_unlock(arg->semB);
 
   //-------------------------------------------------------------------------
-  for (int i = 0; i < arg->positions.size(); i++) {
+  for (int i = 0; i < posit.size(); i++) {
 
-    int pos = arg->positions.at(i); // the position
+    int pos = posit.at(i); // the position
 
     (*arg->message)[pos] = info->c; // insert char into position of string
   }
@@ -71,7 +74,11 @@ void *decode(void *void_ptr) {
 
   pthread_mutex_lock(arg->semB); //third crit section
   
-  (*(arg->turn)) = (*(arg->turn)) + 1;
+  if((*(arg->turn)) >= arg->nthreads){
+      (*(arg->turn)) = 1;
+  }else{
+      (*(arg->turn)) = (*(arg->turn)) + 1;
+  }
 
   pthread_cond_broadcast(arg->waitTurn);
   
@@ -136,8 +143,9 @@ int main() {
    while (getline(std::cin, cline)) { // extract the traversal and positions
 
     pthread_mutex_lock(cont->semB);
+    
     std::vector<int> positions;
-    std::string s1 = cline.substr(0, cline.find(' ')); // traversal string
+    std::string s1 = cline.substr(0, cline.find(' ')); // traversal string (binary)
     cont->trav = s1;
 
     int e = cline.find(' ');
@@ -147,13 +155,14 @@ int main() {
     while (ss >> n) { // get all positions
       positions.push_back(n);
     }
+    
     cont->positions = positions;
     cont->threadnumber = j;
+    
     if (pthread_create(&threadid[j], NULL, decode, (void *)cont)) {
       fprintf(stderr, "Error creating thread\n");
       return 1;
     }
-    //pthread_mutex_unlock(cont->semB);
     
 
     j++;
