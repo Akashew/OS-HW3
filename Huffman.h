@@ -56,22 +56,3 @@ node *huffman(std::vector<char> &chars, std::vector<int> &freqs) {
   return root;
 }
 
-//-----------------------------------------------------------------------------------------------
-
-/*
-
-void printCodes(node *root, std::string code) { 
-
-  if (root == NULL)
-    return;
-
-  if (root->c != '\0') {
-    std::cout << "Symbol: " << root->c << ", Frequency: " << root->freq
-              << ", Code: " << code << std::endl;
-  }
-
-  printCodes(root->left, code + "0");
-  printCodes(root->right, code + "1");
-}
-
-*/
