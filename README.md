@@ -1,4 +1,4 @@
-# OS-HW3
+# OS-Multithreaded Decompressor
 
 - For this assignment, you will modify your solution for programming assignment 1 to comply with the restrictions explained below.
 
