@@ -1,7 +1,5 @@
 # OS-Multithreaded Decompressor
 
-- For this assignment, you will modify your solution for programming assignment 1 to comply with the restrictions explained below.
-
 Given the information about the alphabet and the compressed file as input from STDIN, you need to implement a multithreaded Huffman decompressor based on the following steps:
 
 Read the input from STDIN (the Moodle server will implement input redirection to send the information from a file to STDIN). The input has the following format:
