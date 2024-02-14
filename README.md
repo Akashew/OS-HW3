@@ -1,4 +1,4 @@
-# OS-Multithreaded Decompressor
+# OS-Message-Decompressor
 
 Given the information about the alphabet and the compressed file as input from STDIN, you need to implement a multithreaded Huffman decompressor based on the following steps:
 
